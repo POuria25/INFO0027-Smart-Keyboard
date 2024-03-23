@@ -8,6 +8,9 @@
 
 #define ALPHABET_SIZE 28
 
+#define char_to_index(c) (c == ' ' ? 26 : c == '-' ? 27 : c == '.'  ? 28 : c - 'a')
+#define index_to_char(c) (c == 26 ? ' ' : c == 27 ? '-' : c == 28 ? '.' : c + 'a')
+
 typedef struct TrieNode TrieNode;
 
 

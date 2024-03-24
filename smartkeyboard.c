@@ -1,6 +1,5 @@
 #include "smartkeyboard.h"
 
-
 // Create a new TrieNode
 TrieNode *createNode()
 {
@@ -21,6 +20,7 @@ TrieNode *createNode()
 // Insert a word into the Trie
 int insert(TrieNode *root, char *word)
 {
+    // fprintf(stderr, "Word : [ %s ]\n", word);
     if (!root || !word)
     {
         fprintf(stderr, "insert : Invalid Input\n");
@@ -30,12 +30,17 @@ int insert(TrieNode *root, char *word)
     TrieNode *tmp = root;
     for (int i = 0; i < length; i++)
     {
-        //int j = char_to_index(i);
-        int j = word[i] - 'a';
+        int j = char_to_index(word[i]);
+        // int j = word[i] - 'a';
+        if (j < 0 || j >= ALPHABET_SIZE)
+        {
+            fprintf(stderr, "insert : Invalid character '%c'\n", word[i]);
+            return -1;
+        }
         if (tmp->children[j] == NULL)
             if (!(tmp->children[j] = createNode()))
             {
-                return -1; 
+                return -1;
             }
         tmp = tmp->children[j];
     }
@@ -47,7 +52,6 @@ int insert(TrieNode *root, char *word)
 // // Read the file
 int read_file(TrieNode *root, char *filename)
 {
-
     FILE *file = fopen(filename, "r");
     if (!file)
     {
@@ -63,6 +67,7 @@ int read_file(TrieNode *root, char *filename)
             fclose(file);
             return EXIT_FAILURE;
         }
+        // fprintf(stderr, "Word : [ %s ]\n", word);
     }
     fclose(file);
     return EXIT_SUCCESS;
@@ -71,25 +76,25 @@ int read_file(TrieNode *root, char *filename)
 // Suggest words based on the prefix
 int suggestWords(TrieNode *root, const char *prefix)
 {
-    if (!root || !prefix)
-    {
-        fprintf(stderr, "Word Suggestion Failed\n");
-        return EXIT_FAILURE;
-    }
-    int length = strlen(prefix);
-    TrieNode *tmp = root;
+    // if (!root || !prefix)
+    // {
+    //     fprintf(stderr, "Word Suggestion Failed\n");
+    //     return EXIT_FAILURE;
+    // }
+    // int length = strlen(prefix);
+    // TrieNode *tmp = root;
 
-    for (int i = 0; i < length; i++)
-    {
-        int j = tolower(prefix[i]) - 'a';
-        if (!tmp->children[j])
-        {
-            fprintf(stderr, "No words found with this prefix\n");
-            return EXIT_FAILURE;
-        }
-        tmp = tmp->children[j];
-    }
-    printWord(tmp, (char *)prefix);
+    // for (int i = 0; i < length; i++)
+    // {
+    //     int j = tolower(prefix[i]) - 'a';
+    //     if (!tmp->children[j])
+    //     {
+    //         fprintf(stderr, "No words found with this prefix\n");
+    //         return EXIT_FAILURE;
+    //     }
+    //     tmp = tmp->children[j];
+    // }
+    // printWord(tmp, (char *)prefix);
     return EXIT_SUCCESS;
 }
 

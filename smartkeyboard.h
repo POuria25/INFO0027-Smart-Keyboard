@@ -29,6 +29,22 @@ struct TrieNode
  */
 TrieNode *createNode();
 
+
+/**
+ * Frees the memory allocated for a Trie data structure.
+ *
+ * @param root The root node of the Trie.
+ */
+void freeTrie(TrieNode *root);
+
+/**
+ * Converts a given word to lowercase.
+ *
+ * @param word The word to be converted.
+ * @return A pointer to the converted lowercase word.
+ */
+char *convertToLower(const char *word);
+
 /**
  * Inserts a word into the Trie data structure.
  *

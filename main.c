@@ -14,27 +14,32 @@ int main(int argc, char *argv[])
         {
             return EXIT_FAILURE;
         }
-        if (read_file(root, argv[1]))
+        if (!read_file(root, argv[1]))
         {
             if (strcmp(argv[2], "suggest") == 0)
             {
                 if (suggestWords(root, argv[3]))
                 {
+                    freeTrie(root);
                     return EXIT_SUCCESS;
                 }
                 else
                 {
+                    freeTrie(root);
                     return EXIT_FAILURE;
                 }
             }
             else if (strcmp(argv[2], "complete") == 0)
             {
+                fprintf(stderr, "complete\n");
                 if (completWord(root, argv[3]))
                 {
+                    freeTrie(root);
                     return EXIT_SUCCESS;
                 }
                 else
                 {
+                    freeTrie(root);
                     return EXIT_FAILURE;
                 }
             }
@@ -44,10 +49,10 @@ int main(int argc, char *argv[])
             }
         }
         else
-        {
+        {   fprintf(stderr, "ok\n");
+            freeTrie(root);
             return EXIT_FAILURE;
         }
     }
-
     return 0;
 }

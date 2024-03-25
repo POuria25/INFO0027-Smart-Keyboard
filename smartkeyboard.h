@@ -81,8 +81,8 @@ int suggestWords(TrieNode *root, const char *prefix);
  * @param prefix The prefix string to search for.
  * @return The number of words printed.
  */
-int printWord(TrieNode *root, char *prefix);
 
+int printWordComplet(TrieNode *root, const char *prefix);
 /**
  * Finds the number of words in a Trie data structure that have the given prefix.
  *
@@ -91,5 +91,18 @@ int printWord(TrieNode *root, char *prefix);
  * @return The number of words in the Trie that have the given prefix.
  */
 int completWord(TrieNode *root, const char *prefix);
+
+/**
+ * Prints a list of suggested words based on a given prefix.
+ *
+ * This function takes a TrieNode pointer `root` and a character array `prefix` as input.
+ * It traverses the trie starting from the `root` and finds all the words that have the given `prefix`.
+ * The suggested words are printed to the console.
+ *
+ * @param root    A pointer to the root of the trie.
+ * @param prefix  The prefix to search for in the trie.
+ * @return        The number of suggested words found.
+ */
+int printSuggestWords(TrieNode *root, const char *prefix);
 
 #endif

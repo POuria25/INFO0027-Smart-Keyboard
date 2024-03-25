@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
         {
             if (strcmp(argv[2], "suggest") == 0)
             {
-                if (suggestWords(root, argv[3]))
+                if (!suggestWords(root, argv[3]))
                 {
                     freeTrie(root);
                     return EXIT_SUCCESS;
@@ -31,9 +31,9 @@ int main(int argc, char *argv[])
             }
             else if (strcmp(argv[2], "complete") == 0)
             {
-                fprintf(stderr, "complete\n");
-                if (completWord(root, argv[3]))
+                if (!completWord(root, argv[3]))
                 {
+                    fprintf(stderr, "complete\n");
                     freeTrie(root);
                     return EXIT_SUCCESS;
                 }

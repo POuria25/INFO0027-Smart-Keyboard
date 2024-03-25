@@ -20,14 +20,15 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 tests: $(PROG)
-	./smartkeyboard stations.txt complete Li
-	# other tests...
+	#./smartkeyboard stations.txt complete Mar
+	./smartkeyboard stations.txt suggest Li
 
 valgrind:
-	valgrind --track-origins=yes --leak-check=full ./$(PROG) stations.txt complete Li
+	valgrind --track-origins=yes --leak-check=full ./$(PROG) stations.txt suggest Li
 
 gdb:
-	gdb ./$(PROG) stations.txt complete Li
+	gdb ./smartkeyboard stations.txt complete Li
+
 
 
 memory_sanitizer:

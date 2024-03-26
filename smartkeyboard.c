@@ -72,7 +72,6 @@ int insert(TrieNode *root, char *word)
     TrieNode *tmp = root;
     for (int i = 0; i < length; i++)
     {
-        // char c = tolower(word[i]);
         int j = char_to_index(lowercaseWord[i]);
         if (j < 0 || j >= ALPHABET_SIZE)
         {
@@ -95,11 +94,11 @@ int insert(TrieNode *root, char *word)
         tmp = tmp->children[j];
     }
     tmp->EndOfWord = 1;
-    free(lowercaseWord); // Free memory after use
+    free(lowercaseWord); 
     return EXIT_SUCCESS;
 }
 
-// // Read the file
+// Read the file
 int read_file(TrieNode *root, char *filename)
 {
     FILE *file = fopen(filename, "r");
@@ -109,9 +108,7 @@ int read_file(TrieNode *root, char *filename)
         return EXIT_FAILURE;
     }
 
-    fprintf(stderr, "File Opened Successfully\n");
-
-    char word[30000];
+    char word[256];
     while (fscanf(file, "%s", word) != EOF)
     {
         if (insert(root, word))
@@ -144,7 +141,7 @@ int printWordComplet(TrieNode *root, const char *prefix)
     {
         if (root->children[i])
         { // Appending characters
-            fullWord[strlen(prefix)] = i + 'a';
+            fullWord[strlen(prefix)] = index_to_char(i);
             fullWord[strlen(prefix) + 1] = '\0';
             printWordComplet(root->children[i], (char *)fullWord);
         }
@@ -171,11 +168,7 @@ int completWord(TrieNode *root, const char *prefix)
         }
         tmp = tmp->children[j];
     }
-    // if(tmp->EndOfWord)
-    // {
-    //     fprintf(stderr,"%s\n", (char *)prefix);
-    //     return EXIT_SUCCESS;
-    // }
+
     printWordComplet(tmp, (char *)prefix);
     return EXIT_SUCCESS;
 }
@@ -188,30 +181,19 @@ int printSuggestWords(TrieNode *root, const char *prefix)
         return EXIT_FAILURE;
     }
 
-    int length = strlen(prefix);
     TrieNode *tmp = root;
-
-    for (int i = 0; i < length; i++)
-    {
-        int j = tolower(prefix[i]) - 'a';
-        if (!tmp->children[j])
-        {
-            fprintf(stderr, "suggestNextChar : No suggestions found\n");
-            return EXIT_FAILURE;
-        }
-        tmp = tmp->children[j];
-    }
 
     for (int i = 0; i < ALPHABET_SIZE; i++)
     {
         if (tmp->children[i])
         {
-            fprintf(stderr, "%c\n", i + 'a'); // Print the suggested character
+            fprintf(stderr, "%c\n", index_to_char(i));
         }
     }
 
     return EXIT_SUCCESS;
 }
+
 
 // Suggest words based on the prefix
 int suggestWords(TrieNode *root, const char *prefix)
@@ -221,10 +203,9 @@ int suggestWords(TrieNode *root, const char *prefix)
         fprintf(stderr, "Word Suggestion Failed\n");
         return EXIT_FAILURE;
     }
-    int length = strlen(prefix);
+    
     TrieNode *tmp = root;
-
-    for (int i = 0; i < length; i++)
+    for (int i = 0; prefix[i] != '\0'; i++)
     {
         int j = char_to_index(tolower(prefix[i]));
         if (!tmp->children[j])

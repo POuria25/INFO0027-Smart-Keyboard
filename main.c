@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
             {
                 if (!completWord(root, argv[3]))
                 {
-                    fprintf(stderr, "complete\n");
                     freeTrie(root);
                     return EXIT_SUCCESS;
                 }

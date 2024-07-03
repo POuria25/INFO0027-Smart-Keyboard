@@ -1,37 +1,91 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+
 #include "smartkeyboard.h"
 
-// Create a new TrieNode
-TrieNode *createNode()
+#define MAX_WORD_LENGTH 28
+
+// Function to create a new node
+TstNode *createNode(char data)
 {
-    TrieNode *newNode = (TrieNode *)malloc(sizeof(TrieNode));
-    if (!newNode)
+    TstNode *node = (TstNode *)malloc(sizeof(TstNode));
+    if (!node)
     {
-        fprintf(stderr, "Memory error\n");
+        fprintf(stderr, "Memory allocation failed \n");
         return NULL;
     }
-    newNode->EndOfWord = 0;
-    for (int i = 0; i < ALPHABET_SIZE; i++)
-    {
-        newNode->children[i] = NULL;
-    }
-    return newNode;
+    node->data = data;
+    node->isEndOfString = 0;
+    node->left = NULL;
+    node->equal = NULL;
+    node->right = NULL;
+
+    return node;
 }
 
-void freeTrie(TrieNode *root)
+// Function to insert a new word in the TST
+TstNode *insert(TstNode *root, char *word)
 {
-    if (root == NULL)
+    // Check if the word is NULL or empty
+    if (!word || !*word)
     {
-        return;
+        return root;
     }
-
-    for (int i = 0; i < ALPHABET_SIZE; i++)
+    // If root is NULL, create a new node
+    if (!root)
     {
-        if (root->children[i] != NULL)
+        root = createNode(*word);
+        if (!root)
         {
-            freeTrie(root->children[i]);
+            fprintf(stderr, "[insert function]: Memory allocation failed\n");
+            return NULL;
         }
     }
-    free(root);
+    // Insert the word in the appropriate subtree
+    if (*word < root->data)
+    {
+        root->left = insert(root->left, word);
+    }
+    else if (*word > root->data)
+    {
+        root->right = insert(root->right, word);
+    }
+    else
+    {
+        // If we reach the end of the word, mark this node as end of string
+        if (*(word + 1))
+        {
+            root->equal = insert(root->equal, word + 1);
+        }
+        else
+        {
+            root->isEndOfString = 1;
+        }
+    }
+    return root;
+}
+
+// Function to free the TST
+void freeTst(TstNode *root)
+{
+    if (root)
+    {
+        if (root->left)
+        {
+            freeTst(root->left);
+        }
+        if (root->equal)
+        {
+            freeTst(root->equal);
+        }
+        if (root->right)
+        {
+            freeTst(root->right);
+        }
+        free(root);
+    }
 }
 
 char *convertToLower(const char *word)
@@ -40,7 +94,6 @@ char *convertToLower(const char *word)
     {
         return NULL;
     }
-
     size_t length = strlen(word);
     char *lowercaseWord = (char *)malloc(length + 1); // Allocate memory for the modified word
     if (lowercaseWord == NULL)
@@ -48,58 +101,16 @@ char *convertToLower(const char *word)
         fprintf(stderr, "Memory allocation failed\n");
         return NULL;
     }
-
     for (size_t i = 0; i < length; i++)
     {
         lowercaseWord[i] = tolower(word[i]); // Convert each character to lowercase
     }
-    lowercaseWord[length] = '\0'; // Null-terminate the string
+    lowercaseWord[length] = '\0'; // Add the null terminator
 
     return lowercaseWord;
 }
 
-// Insert a word into the Trie
-int insert(TrieNode *root, char *word)
-{
-    // fprintf(stderr, "Word : [ %s ]\n", word);
-    if (!root || !word)
-    {
-        fprintf(stderr, "insert : Invalid Input\n");
-        return -1;
-    }
-    char *lowercaseWord = convertToLower(word);
-    int length = strlen(lowercaseWord);
-    TrieNode *tmp = root;
-    for (int i = 0; i < length; i++)
-    {
-        int j = char_to_index(lowercaseWord[i]);
-        if (j < 0 || j >= ALPHABET_SIZE)
-        {
-            fprintf(stderr, "insert : Invalid character '%c'\n", word[i]);
-            free(lowercaseWord);
-            return -1;
-        }
-        // Check if the child node exists
-        if (tmp->children[j] == NULL)
-        {
-            TrieNode *newNode = createNode();
-            if (!newNode)
-            {
-                fprintf(stderr, "insert : Failed to create new node\n");
-                free(lowercaseWord);
-                return -1;
-            }
-            tmp->children[j] = newNode;
-        }
-        tmp = tmp->children[j];
-    }
-    tmp->EndOfWord = 1;
-    free(lowercaseWord); 
-    return EXIT_SUCCESS;
-}
-
-// Read the file
-int read_file(TrieNode *root, char *filename)
+int readfile(TstNode *root, char *filename)
 {
     FILE *file = fopen(filename, "r");
     if (!file)
@@ -107,114 +118,132 @@ int read_file(TrieNode *root, char *filename)
         fprintf(stderr, "Opening File Failed\n");
         return EXIT_FAILURE;
     }
-
-    char word[256];
-    while (fscanf(file, "%s", word) != EOF)
+    char line[256];
+    while (fgets(line, sizeof(line), file))
     {
-        if (insert(root, word))
+        size_t len = strlen(line);
+        if (len > 0 && line[len - 1] == '\n')
         {
-            fprintf(stderr, "Word Insertion Failed\n");
+            line[len - 1] = '\0';
+        }
+        char *new = malloc(strlen(line) + 1);
+        strcpy(new, line);
+        if (!new)
+        {
+            fprintf(stderr, "Memory allocation failed\n");
+            fclose(file);
+            return EXIT_FAILURE;
+        }
+        char *tmp = convertToLower(new);
+        free(new);
+        root = insert(root, tmp);
+        free(tmp);
+        if (!root)
+        {
+            fprintf(stderr, "insert: Failed to insert word\n");
             fclose(file);
             return EXIT_FAILURE;
         }
     }
+    // printWords(root);
     fclose(file);
     return EXIT_SUCCESS;
 }
 
-int printWordComplet(TrieNode *root, const char *prefix)
+void collectWords(TstNode *root, char *buffer, int depth)
 {
-    if (!root || !prefix)
-    {
-        fprintf(stderr, "printWord : Invalid Inputs\n");
-        return EXIT_FAILURE;
-    }
-    char fullWord[256];
-    strcpy(fullWord, prefix);
+    if (!root)  return;
 
-    if (root->EndOfWord) // If node represents the end of a word, print it
+    buffer[depth] = root->data;
+    buffer[depth + 1] = '\0';
+
+    if (root->left)
     {
-        fprintf(stderr, "%s\n", fullWord);
+        collectWords(root->left, buffer, depth);
     }
-    // printing the words from DS recursively
-    for (int i = 0; i < ALPHABET_SIZE; i++)
+
+    if (root->isEndOfString)
     {
-        if (root->children[i])
-        { // Appending characters
-            fullWord[strlen(prefix)] = index_to_char(i);
-            fullWord[strlen(prefix) + 1] = '\0';
-            printWordComplet(root->children[i], (char *)fullWord);
-        }
+        printf("%s\n", buffer);
     }
-    return EXIT_SUCCESS;
+
+    if (root->equal)
+    {
+        collectWords(root->equal, buffer, depth + 1);
+    }
+
+    if (root->right)
+    {
+        collectWords(root->right, buffer, depth);
+    }
 }
 
-int completWord(TrieNode *root, const char *prefix)
+TstNode *findPrefixNode(TstNode *root, const char *prefix)
 {
-    if (!root || !prefix)
+    while (root && *prefix)
     {
-        fprintf(stderr, "completWord : Invalid Inputs\n");
-        return EXIT_FAILURE;
-    }
-    TrieNode *tmp = root;
-
-    for (int i = 0; prefix[i] != '\0'; i++)
-    {
-        int j = tolower(prefix[i]) - 'a';
-        if (!tmp->children[j])
+        if (*prefix < root->data)
         {
-            fprintf(stderr, "No words found with this prefix\n");
-            return EXIT_FAILURE;
+            root = root->left;
         }
-        tmp = tmp->children[j];
+        else if (*prefix > root->data)
+        {
+            root = root->right;
+        }
+        else
+        {
+            if (*(prefix + 1) == '\0')
+            {
+                return root;
+            }
+            root = root->equal;
+            prefix++;
+        }
     }
-
-    printWordComplet(tmp, (char *)prefix);
-    return EXIT_SUCCESS;
+    return NULL;
 }
 
-int printSuggestWords(TrieNode *root, const char *prefix)
+void findAllWordsFromNode(TstNode *root, const char *prefix, char *buffer, int depth)
+{
+    if (!root)
+        return;
+
+    buffer[depth] = root->data;
+    buffer[depth + 1] = '\0';
+
+    if (root->isEndOfString && strstr(buffer, prefix) != NULL)
+    {
+        buffer[depth + 1] = '\0';
+        printf("%s\n", buffer);
+    }
+
+    findAllWordsFromNode(root->left, prefix, buffer, depth);
+    findAllWordsFromNode(root->equal, prefix, buffer, depth + 1);
+    findAllWordsFromNode(root->right, prefix, buffer, depth);
+}
+
+void completWord(TstNode *root, const char *prefix)
 {
     if (!root || !prefix)
     {
-        fprintf(stderr, "suggestNextChar : Invalid Inputs\n");
-        return EXIT_FAILURE;
+        fprintf(stderr, "completWord: Invalid input\n");
+        return;
     }
-
-    TrieNode *tmp = root;
-
-    for (int i = 0; i < ALPHABET_SIZE; i++)
+    char *lowercasePrefix = convertToLower(prefix);
+    if (!lowercasePrefix)
     {
-        if (tmp->children[i])
-        {
-            fprintf(stderr, "%c\n", index_to_char(i));
-        }
+        fprintf(stderr, "completWord: Memory allocation failed\n");
+        return;
     }
+    // char buffer[MAX_WORD_LENGTH] = {0};
+    // strncpy(buffer, lowercasePrefix, strlen(lowercasePrefix));
+    // buffer[strlen(lowercasePrefix)] = '\0';
 
-    return EXIT_SUCCESS;
+    // findAllWordsFromNode(root, lowercasePrefix, buffer, strlen(lowercasePrefix) - 1);
+
+    char buffer[MAX_WORD_LENGTH] = {0};
+    findAllWordsFromNode(root, lowercasePrefix, buffer, 0);
+
+    free(lowercasePrefix);
 }
 
-
-// Suggest words based on the prefix
-int suggestWords(TrieNode *root, const char *prefix)
-{
-    if (!root || !prefix)
-    {
-        fprintf(stderr, "Word Suggestion Failed\n");
-        return EXIT_FAILURE;
-    }
-    
-    TrieNode *tmp = root;
-    for (int i = 0; prefix[i] != '\0'; i++)
-    {
-        int j = char_to_index(tolower(prefix[i]));
-        if (!tmp->children[j])
-        {
-            fprintf(stderr, "No words found with this prefix\n");
-            return EXIT_FAILURE;
-        }
-        tmp = tmp->children[j];
-    }
-    printSuggestWords(tmp, (char *)prefix);
-    return EXIT_SUCCESS;
-}

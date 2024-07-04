@@ -205,6 +205,27 @@ TstNode *findPrefixNode(TstNode *root, const char *prefix)
     return NULL;
 }
 
+char *uppercase(char *str)
+{
+    if (str == NULL || strlen(str) == 0)
+    {
+        return str;
+    }
+    str[0] = toupper((unsigned char)str[0]);
+    for (int i = 1; i < strlen(str); i++)
+    {
+        if (str[i] == ' ')
+        {
+            str[i + 1] = toupper((unsigned char)str[i + 1]);
+        }
+        else if (str[i] == '-')
+        {
+            str[i + 1] = toupper((unsigned char)str[i + 1]);
+        }
+    }
+    return str;
+}
+
 void findAllWordsFromNode(TstNode *root, const char *prefix, char *buffer, int depth)
 {
     if (!root)
@@ -216,7 +237,8 @@ void findAllWordsFromNode(TstNode *root, const char *prefix, char *buffer, int d
     if (root->isEndOfString && strstr(buffer, prefix) != NULL)
     {
         buffer[depth + 1] = '\0';
-        printf("%s\n", buffer);
+
+        printf("%s\n", uppercase(buffer));
     }
 
     findAllWordsFromNode(root->left, prefix, buffer, depth);
@@ -237,7 +259,7 @@ void completWord(TstNode *root, const char *prefix)
         fprintf(stderr, "completWord: Memory allocation failed\n");
         return;
     }
-    
+
     char buffer[MAX_WORD_LENGTH] = {0};
     findAllWordsFromNode(root, prefix, buffer, 0);
 }
@@ -283,7 +305,7 @@ void suggestWord(TstNode *root, const char *prefix)
                 }
             }
             if (j == i)
-            { 
+            {
                 printf("%c\n", nextChars[i]);
             }
         }

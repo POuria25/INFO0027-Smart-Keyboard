@@ -47,6 +47,14 @@ void freeTst(TstNode *root);
  */
 int readfile(TstNode *root, char *filename);
 
+/**
+ * Converts a word to lowercase.
+ *
+ * @param word The word to be converted.
+ * @return The lowercase version of the word.
+ */
+char *convertToLower(const char *word);
+
 void collectWords(TstNode *root, char *buffer, int depth);
 
 TstNode *findPrefixNode(TstNode *root, const char *prefix);
@@ -55,12 +63,10 @@ void findAllWordsFromNode(TstNode *root, const char *prefix, char *buffer, int d
 
 void completWord(TstNode *root, const char *prefix);
 
-/**
- * Converts a word to lowercase.
- *
- * @param word The word to be converted.
- * @return The lowercase version of the word.
- */
-char *convertToLower(const char *word);
+void collectNextCharacters(TstNode *root, char *buffer, int depth, char *nextChars, int *charCount);
+
+void suggestWord(TstNode *root, const char *prefix);
+
+
 
 #endif

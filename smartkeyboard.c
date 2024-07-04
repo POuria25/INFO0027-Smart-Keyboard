@@ -134,6 +134,7 @@ int readfile(TstNode *root, char *filename)
             fclose(file);
             return EXIT_FAILURE;
         }
+
         char *tmp = convertToLower(new);
         free(new);
         root = insert(root, tmp);
@@ -152,7 +153,8 @@ int readfile(TstNode *root, char *filename)
 
 void collectWords(TstNode *root, char *buffer, int depth)
 {
-    if (!root)  return;
+    if (!root)
+        return;
 
     buffer[depth] = root->data;
     buffer[depth + 1] = '\0';
@@ -229,21 +231,82 @@ void completWord(TstNode *root, const char *prefix)
         fprintf(stderr, "completWord: Invalid input\n");
         return;
     }
-    char *lowercasePrefix = convertToLower(prefix);
-    if (!lowercasePrefix)
+
+    if (!prefix)
     {
         fprintf(stderr, "completWord: Memory allocation failed\n");
         return;
     }
-    // char buffer[MAX_WORD_LENGTH] = {0};
-    // strncpy(buffer, lowercasePrefix, strlen(lowercasePrefix));
-    // buffer[strlen(lowercasePrefix)] = '\0';
-
-    // findAllWordsFromNode(root, lowercasePrefix, buffer, strlen(lowercasePrefix) - 1);
-
+    
     char buffer[MAX_WORD_LENGTH] = {0};
-    findAllWordsFromNode(root, lowercasePrefix, buffer, 0);
-
-    free(lowercasePrefix);
+    findAllWordsFromNode(root, prefix, buffer, 0);
 }
 
+void suggestWord(TstNode *root, const char *prefix)
+{
+    if (!root || !prefix)
+    {
+        fprintf(stderr, "suggestWord: Invalid input\n");
+        return;
+    }
+
+    TstNode *prefixNode = findPrefixNode(root, prefix);
+
+    if (!prefixNode)
+    {
+        printf("No suggestions found.\n");
+        return;
+    }
+
+    char nextChars[MAX_WORD_LENGTH] = {0};
+    int charCount = 0;
+
+    if (prefixNode->equal)
+    {
+        collectNextCharacters(prefixNode->equal, NULL, 0, nextChars, &charCount);
+    }
+
+    for (int i = 0; i < charCount; i++)
+    {
+        if (nextChars[i] == ' ' || nextChars[i] == '-' || nextChars[i] == '_')
+        {
+            printf("%c\n", nextChars[i]);
+        }
+        else
+        {
+            int j;
+            for (j = 0; j < i; j++)
+            {
+                if (nextChars[i] == nextChars[j])
+                {
+                    break;
+                }
+            }
+            if (j == i)
+            { 
+                printf("%c\n", nextChars[i]);
+            }
+        }
+    }
+}
+
+void collectNextCharacters(TstNode *root, char *buffer, int depth, char *nextChars, int *charCount)
+{
+    if (!root)
+        return;
+
+    if (root->isEndOfString && depth == 0)
+    {
+        return;
+    }
+
+    if (depth == 0 && root->data != '\0')
+    {
+        nextChars[*charCount] = root->data;
+        (*charCount)++;
+    }
+
+    collectNextCharacters(root->left, buffer, depth, nextChars, charCount);
+    collectNextCharacters(root->equal, buffer, depth - 1, nextChars, charCount);
+    collectNextCharacters(root->right, buffer, depth, nextChars, charCount);
+}

@@ -26,23 +26,15 @@ int main(int argc, char *argv[])
         {
             if (strcmp(argv[2], "suggest") == 0)
             {
-                // if (!search(root, argv[3]))
-                // {
-                //     fprintf(stderr, "The word is in the dictionary\n");
-                //     freeTst(root);
-                //     return EXIT_SUCCESS;
-                // }
-                // else
-                // {
-                //     fprintf(stderr, "The word is not in the dictionary\n");
-                //     freeTst(root);
-                //     return EXIT_FAILURE;
-                // }
-                // printf("suggest\n");
+                char *prefix = convertToLower(argv[3]);
+                suggestWord(root, prefix);
+                free(prefix);
             }
             else if (strcmp(argv[2], "complete") == 0)
             {
-                completWord(root, argv[3]);
+                char *prefix = convertToLower(argv[3]);
+                completWord(root, prefix);
+                free(prefix);
             }
             else
             {

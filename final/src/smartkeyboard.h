@@ -16,6 +16,14 @@
 
 typedef struct TstNode TstNode;
 
+/**
+ * @brief Structure for a Ternary Search Tree (TST) node.
+ * @param data The character data stored in the node.
+ * @param isEndOfString A flag indicating if the node marks the end of a word.
+ * @param left A pointer to the left child node.
+ * @param equal A pointer to the equal child node.
+ * @param right A pointer to the right child node.
+ */
 struct TstNode
 {
     char data;
@@ -23,30 +31,58 @@ struct TstNode
     TstNode *left;
     TstNode *equal;
     TstNode *right;
+    TstNode *parent;
 };
 
 /**
- * Creates a new node with the given data.
- *
- * @param data The data to be stored in the node.
- * @return A pointer to the newly created node.
+ * @brief Structure for a list of words.
+ * @param node A pointer to the TST node containing the word.
+ * @param next A pointer to the next word in the list.
  */
-TstNode *createNode(char data);
+typedef struct WordList {
+    TstNode *node;
+    struct WordList *next;
+} WordList;
+
 
 /**
- * Inserts a new word into the Ternary Search Tree (TST).
+ * @brief Creates a new TST node with the specified character data.
+ *
+ * @param data The character data to be stored in the node.
+ * @param parent The parent node of the new node.
+ * @return A pointer to the newly created TST node.
+ */
+TstNode *create_node(char data, TstNode *parent);
+
+/**
+ * @brief Frees the memory allocated for the TST.
+ *
+ * @param root The root node of the TST.
+ */
+void free_tst(TstNode *root);
+
+/**
+ * @brief Adds a word to the word list.
+ *
+ * @param wordList The word list to add the word to.
+ * @param node The TST node containing the word.
+ */
+void add_word_list(WordList *wordList, TstNode *node);
+
+/**
+ * @brief Frees the memory allocated for the word list.
+ *
+ * @param wordList The word list to be freed.
+ */
+void free_word_list(WordList *wordList);
+
+/**
+ * @brief Inserts a word into the TST.
  *
  * @param root The root node of the TST.
  * @param word The word to be inserted.
- * @return The updated root node of the TST.
+ * @return The root node of the TST after inserting the word.
  */
-TstNode *insert(TstNode *root, char *word);
+TstNode *insert(TstNode *root, const char *word, TstNode *parent);
 
-/**
- * Frees the memory allocated for a Ternary Search Tree (TST).
- *
- * @param root The root node of the TST to be freed.
- */
-void freeTst(TstNode *root);
-
-#endif
+#endif // SMARTKEYBOARD_H

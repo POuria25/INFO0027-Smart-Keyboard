@@ -13,41 +13,31 @@
 #include <ctype.h>
 
 #include "complete.h"
-#include "util.h"
+#include "utility.h"
 
-void findAllWordsFromNode(TstNode *root, const char *prefix, char *buffer, int depth)
-{
-    if (!root)
-        return;
+
+void find_words(TstNode *root, const char *prefix, char *buffer, int depth) {
+    if (!root) return;
 
     buffer[depth] = root->data;
     buffer[depth + 1] = '\0';
 
-    if (root->isEndOfString && strstr(buffer, prefix) != NULL)
-    {
-        buffer[depth + 2] = '\0';
-        printf("%s\n", uppercase(buffer));
+    if (root->isEndOfString && strstr(buffer, prefix) != NULL) {
+        printf("%s\n", convert_to_uppercase(buffer));
     }
 
-    findAllWordsFromNode(root->left, prefix, buffer, depth);
-    findAllWordsFromNode(root->equal, prefix, buffer, depth + 1);
-    findAllWordsFromNode(root->right, prefix, buffer, depth);
+    find_words(root->left, prefix, buffer, depth);
+    find_words(root->equal, prefix, buffer, depth + 1);
+    find_words(root->right, prefix, buffer, depth);
 }
 
-void completWord(TstNode *root, const char *prefix)
-{
-    if (!root || !prefix)
-    {
-        fprintf(stderr, "completWord: Invalid input\n");
+
+void complet_word(TstNode *root, const char *prefix) {
+    if (!root || !prefix) {
+        fprintf(stderr, "complet_word: Invalid input\n");
         return;
     }
 
-    if (!prefix)
-    {
-        fprintf(stderr, "completWord: Memory allocation failed\n");
-        return;
-    }
-
-    char buffer[MAX_WORD_LENGTH] = {0};
-    findAllWordsFromNode(root, prefix, buffer, 0);
+    char buffer[256] = {0}; // Adjust buffer size as needed
+    find_words(root, prefix, buffer, 0);
 }

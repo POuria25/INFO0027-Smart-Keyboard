@@ -13,35 +13,27 @@
 #include "smartkeyboard.h"
 
 /**
- * Collects all the words in the Ternary Search Tree (TST) and prints them.
+ * Finds all words in the Ternary Search Tree (TST) that have a given prefix.
  *
  * @param root The root node of the TST.
+ * @param prefix The prefix to search for.
+ * @param buffer The buffer to store the found words.
+ * @param depth The current depth in the TST.
  */
-void collectWords(TstNode *root, char *buffer, int depth);
+void find_words(TstNode *root, const char *prefix, char *buffer, int depth);
+
 
 /**
- * Finds the node that corresponds to the given prefix.
+ * Completes a word based on a given prefix.
  *
- * @param root The root node of the TST.
- * @param prefix The prefix to be searched for.
- * @return The node that corresponds to the given prefix.
+ * This function takes a TstNode pointer `root` and a const char pointer `prefix` as parameters.
+ * It completes a word based on the given prefix by traversing the Ternary Search Tree (TST) starting from the root node.
+ * The completed word is printed to the standard output.
+ *
+ * @param root   A pointer to the root node of the Ternary Search Tree.
+ * @param prefix The prefix of the word to be completed.
  */
-TstNode *findPrefixNode(TstNode *root, const char *prefix);
+void complet_word(TstNode *root, const char *prefix);
 
-/**
- * Finds all the words that start with the given prefix and prints them.
- *
- * @param root The root node of the TST.
- * @param prefix The prefix to be searched for.
- */
-void findAllWordsFromNode(TstNode *root, const char *prefix, char *buffer, int depth);
-
-/**
- * Completes the given word and prints the suggestions.
- *
- * @param root The root node of the TST.
- * @param prefix The word to be completed.
- */
-void completWord(TstNode *root, const char *prefix);
 
 #endif // COMPLETE_H

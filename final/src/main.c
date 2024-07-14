@@ -7,18 +7,15 @@
  * This file contains the main function of the Smart Keyboard module.
  */
 
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 
 #include "smartkeyboard.h"
-#include "util.h"
+#include "utility.h"
 #include "complete.h"
 #include "suggest.h"
-
-
 
 int main(int argc, char *argv[])
 {
@@ -30,24 +27,24 @@ int main(int argc, char *argv[])
     }
     else
     {
-        root = createNode('\0'); 
+        root = create_node('\0', NULL);
         if (!root)
         {
             return EXIT_FAILURE;
         }
 
-        if (!readfile(root, argv[1]))
+        if (!read_file(root, argv[1]))
         {
             if (strcmp(argv[2], "suggest") == 0)
             {
-                char *prefix = convertToLower(argv[3]);
-                suggestWord(root, prefix);
+                char *prefix = convert_to_lowercase(argv[3]);
+                suggest(root, prefix);
                 free(prefix);
             }
             else if (strcmp(argv[2], "complete") == 0)
             {
-                char *prefix = convertToLower(argv[3]);
-                completWord(root, prefix);
+                char *prefix = convert_to_lowercase(argv[3]);
+                complet_word(root, prefix);
                 free(prefix);
             }
             else
@@ -58,12 +55,12 @@ int main(int argc, char *argv[])
         }
         else
         {
-            freeTst(root);
-
+            fprintf(stderr, "Unknown command: %s\n", argv[2]);
+            free_tst(root);
             return EXIT_FAILURE;
         }
     }
-    freeTst(root);
+    free_tst(root);
 
     return EXIT_SUCCESS;
 }

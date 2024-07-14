@@ -1,4 +1,3 @@
-
 /**
  * @file suggest.c
  * @brief Implementation file for the Suggest module.
@@ -13,97 +12,154 @@
 #include <ctype.h>
 
 #include "suggest.h"
+#include "utility.h"
 
-void collectNextCharacters(TstNode *root, char *buffer, int depth, char *nextChars, int *charCount)
+void collect_next_chars(TstNode *node, char *collected, int *count)
 {
-    if (!root)
+    if (!node || *count >= 256)
         return;
 
-    if (root->isEndOfString && depth == 0)
+    for (int i = 0; i < *count; i++)
     {
-        return;
+        if (collected[i] == node->data)
+        {
+            return;
+        }
     }
 
-    if (depth == 0 && root->data != '\0')
-    {
-        nextChars[*charCount] = root->data;
-        (*charCount)++;
-    }
+    collected[*count] = node->data;
+    (*count)++;
 
-    collectNextCharacters(root->left, buffer, depth, nextChars, charCount);
-    collectNextCharacters(root->equal, buffer, depth - 1, nextChars, charCount);
-    collectNextCharacters(root->right, buffer, depth, nextChars, charCount);
+    collect_next_chars(node->left, collected, count);
+    collect_next_chars(node->right, collected, count);
 }
 
-TstNode *findPrefixNode(TstNode *root, const char *prefix)
+void check_from_node(TstNode *node, const char *prefix, char *collected, int *count)
 {
-    while (root && *prefix)
+    while (*prefix && node)
     {
-        if (*prefix < root->data)
+        if (*prefix < node->data)
         {
-            root = root->left;
+            node = node->left;
         }
-        else if (*prefix > root->data)
+        else if (*prefix > node->data)
         {
-            root = root->right;
+            node = node->right;
         }
         else
         {
             if (*(prefix + 1) == '\0')
             {
-                return root;
+                if (node->equal)
+                {
+                    collect_next_chars(node->equal, collected, count);
+                }
+                return;
             }
-            root = root->equal;
             prefix++;
+            node = node->equal;
         }
     }
-    return NULL;
 }
 
-void suggestWord(TstNode *root, const char *prefix)
+void check_prefix_in_tst(TstNode *root, const char *prefix, char *collected, int *count)
+{
+    if (!prefix || !root)
+        return;
+
+    check_from_node(root, prefix, collected, count);
+
+    if (root->left)
+    {
+        check_prefix_in_tst(root->left, prefix, collected, count);
+    }
+    if (root->equal)
+    {
+        check_prefix_in_tst(root->equal, prefix, collected, count);
+    }
+    if (root->right)
+    {
+        check_prefix_in_tst(root->right, prefix, collected, count);
+    }
+}
+
+void suggest(TstNode *root, const char *prefix)
 {
     if (!root || !prefix)
     {
-        fprintf(stderr, "suggestWord: Invalid input\n");
+        fprintf(stderr, "suggest: Empty input\n");
         return;
     }
 
-    TstNode *prefixNode = findPrefixNode(root, prefix);
+    TstNode *node = root;
+    int isCompleteWord = 0;
 
-    if (!prefixNode)
+    while (*prefix && node)
     {
-        printf("No suggestions found.\n");
-        return;
-    }
-
-    char nextChars[MAX_WORD_LENGTH] = {0};
-    int charCount = 0;
-
-    if (prefixNode->equal)
-    {
-        collectNextCharacters(prefixNode->equal, NULL, 0, nextChars, &charCount);
-    }
-
-    for (int i = 0; i < charCount; i++)
-    {
-        if (nextChars[i] == ' ' || nextChars[i] == '-' || nextChars[i] == '_')
+        if (*prefix < node->data)
         {
-            printf("%c\n", nextChars[i]);
+            node = node->left;
+        }
+        else if (*prefix > node->data)
+        {
+            node = node->right;
         }
         else
         {
-            int j;
-            for (j = 0; j < i; j++)
+            if (*(prefix + 1) == '\0')
             {
-                if (nextChars[i] == nextChars[j])
-                {
-                    break;
-                }
+                isCompleteWord = node->isEndOfString;
+                break;
             }
-            if (j == i)
+            prefix++;
+            node = node->equal;
+        }
+    }
+
+    // if the prefix is not found directly in the TST
+    if (!node)
+    {
+        char tmp[256] = {0};
+        int count = 0;
+
+        check_prefix_in_tst(root, prefix, tmp, &count);
+
+        if (count > 0)
+        {
+            for (int i = 0; i < count; i++)
             {
-                printf("%c\n", nextChars[i]);
+                printf("%c\n", tmp[i]);
             }
+        }
+        else
+        {
+            printf("No suggestions found for %s \n", prefix);
+        }
+    }
+
+    char collected[256] = {0};
+    int count = 0;
+
+    if (isCompleteWord)
+    {
+        printf(".\n");
+        if (node->equal && has_additional_words(node->equal))
+        {
+            printf("-\n");
+            return;
+        }
+    }
+    else
+    {
+
+        check_from_node(node, prefix, collected, &count);
+    }
+
+    if (count > 0)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            printf("%c\n", collected[i]);
         }
     }
 }

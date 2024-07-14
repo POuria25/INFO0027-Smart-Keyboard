@@ -1,4 +1,3 @@
-
 /**
  * @file smartkeyboard.c
  * @brief Implementation file for the Smart Keyboard module.
@@ -14,83 +13,125 @@
 
 #include "smartkeyboard.h"
 
-// Function to create a new node
-TstNode *createNode(char data)
+
+
+TstNode *create_node(char data, TstNode *parent)
 {
     TstNode *node = (TstNode *)malloc(sizeof(TstNode));
     if (!node)
     {
-        fprintf(stderr, "Memory allocation failed \n");
+        fprintf(stderr, "create_node: Memory allocation failed\n");
         return NULL;
     }
+
     node->data = data;
     node->isEndOfString = 0;
     node->left = NULL;
     node->equal = NULL;
     node->right = NULL;
+    node->parent = parent;
 
     return node;
 }
 
-// Function to insert a new word in the TST
-TstNode *insert(TstNode *root, char *word)
-{
-    // Check if the word is NULL or empty
-    if (!word || !*word)
-    {
-        return root;
-    }
-    // If root is NULL, create a new node
-    if (!root)
-    {
-        root = createNode(*word);
-        if (!root)
-        {
-            fprintf(stderr, "[insert function]: Memory allocation failed\n");
-            return NULL;
-        }
-    }
-    // Insert the word in the appropriate subtree
-    if (*word < root->data)
-    {
-        root->left = insert(root->left, word);
-    }
-    else if (*word > root->data)
-    {
-        root->right = insert(root->right, word);
-    }
-    else
-    {
-        // If we reach the end of the word, mark this node as end of string
-        if (*(word + 1))
-        {
-            root->equal = insert(root->equal, word + 1);
-        }
-        else
-        {
-            root->isEndOfString = 1;
-        }
-    }
-    return root;
-}
-
 // Function to free the TST
-void freeTst(TstNode *root)
+void free_tst(TstNode *root)
 {
     if (root)
     {
         if (root->left)
         {
-            freeTst(root->left);
+            free_tst(root->left);
         }
         if (root->equal)
         {
-            freeTst(root->equal);
+            free_tst(root->equal);
         }
         if (root->right)
         {
-            freeTst(root->right);
+            free_tst(root->right);
         }
+        // if(root->parent)
+        // {
+        //     free(root->parent);
+        // }
         free(root);
     }
 }
+
+void add_word_list(WordList *wordList, TstNode *node)
+{
+    if (!wordList || !node)
+    {
+        fprintf(stderr, "add_word_list: Invalid input\n");
+        return;
+    }
+
+    WordList *newWord = (WordList *)malloc(sizeof(WordList));
+    if (!newWord)
+    {
+        fprintf(stderr, "add_word_list: Memory allocation failed\n");
+        return;
+    }
+
+    newWord->node = node;
+    newWord->next = NULL;
+
+    while (wordList->next)
+    {
+        wordList = wordList->next;
+    }
+
+    wordList->next = newWord;
+}
+
+
+void free_word_list(WordList *wordList)
+{
+    if (!wordList)
+    {
+        fprintf(stderr, "free_word_list: Invalid input\n");
+        return;
+    }
+
+    WordList *temp;
+    while (wordList)
+    {
+        temp = wordList;
+        wordList = wordList->next;
+        free(temp);
+    }
+}
+
+// Function to insert a word into the TST
+TstNode *insert(TstNode *root, const char *word, TstNode *parent) {
+    if (!word || !*word) {
+        return root;
+    }
+
+    if (!root) {
+        root = create_node(*word, parent);
+        if (!root) {
+            fprintf(stderr, "[insert function]: Memory allocation failed\n");
+            return NULL;
+        }
+    }
+
+    if (*word < root->data) {
+        //printf("Inserting %c to the left of %c\n", *word, root->data);
+        root->left = insert(root->left, word, root);
+    } else if (*word > root->data) {
+        //printf("Inserting %c to the right of %c\n", *word, root->data);
+        root->right = insert(root->right, word, root);
+    } else {
+        if (*(word + 1)) {
+            //printf("Inserting %c to the middle of %c\n", *(word + 1), root->data);
+            root->equal = insert(root->equal, word + 1, root);
+        } else {
+            root->isEndOfString = 1;
+            //printf("Marking end of string at %c\n", root->data);
+        }
+    }
+    return root;
+}
+
